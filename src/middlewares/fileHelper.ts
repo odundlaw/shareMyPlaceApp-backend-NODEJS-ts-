@@ -1,4 +1,4 @@
-import { Request, NextFunction } from "express";
+import { Request, NextFunction, Response } from "express";
 import path from "path";
 import fs from "fs";
 import { getImagePath } from "../utils/helpers";
@@ -9,9 +9,7 @@ const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz1234567890", 12);
 
 const MIME_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
-export const fileHelper = (req: Request, res, next: NextFunction) => {
-
-    let image: string;
+export const fileHelper = (req: Request, res: Response, next: NextFunction) => {
 
     req.busboy.on("finish", function () {
         next();
@@ -22,7 +20,7 @@ export const fileHelper = (req: Request, res, next: NextFunction) => {
             return res.status(StatusCodes.BAD_REQUEST).send("Invalid File Type!");
         }
         const uniqueName = nanoid();
-        const ext = path.extname(info.filename);
+        const ext = path.extname(info.filename) //info.mimeType.split("/")[1];
         const filePath = getImagePath(uniqueName, ext);
         req.body["image"] = filePath;
         const stream = fs.createWriteStream(filePath);
@@ -30,7 +28,7 @@ export const fileHelper = (req: Request, res, next: NextFunction) => {
     })
 
     req.busboy.on("field", async function (fieldName, fieldValue) {
-        req.body[fieldName] = fieldValue;
+        req.body[fieldName]= fieldValue;
     });
 
     req.pipe(req.busboy)

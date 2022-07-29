@@ -10,6 +10,7 @@ import { connectToDatabase, disconnectDatabase } from "./utils/database";
 import constants from "./constants/constants.config";
 import logger from "./utils/logger";
 import userRoutes from "./modules/user/user.route";
+import authRoutes from "./modules/auth/auth.route";
 import bodyParser from "body-parser";
 
 const PORT = process.env.PORT || "8080";
@@ -24,15 +25,12 @@ app.use(cors({
     credentials: true
 }))
 app.use(busboy({ immediate: true }));
-
-
 app.use(helmet());
 
-app.use("/api/users", userRoutes)
-
+app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 
 const httpServer = createServer(app);
-
 const server = httpServer.listen(PORT, () => {
     logger.info(`App listening at localhost://${PORT}`);
     connectToDatabase();
@@ -49,7 +47,6 @@ function gracefulShutdown(signals: string) {
         process.exit(0)
     })
 }
-
 
 const signals = ["SIGTERM, SIGINT"];
 

@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import { processRequestBody } from "zod-express-middleware";
 import { registerUser } from "./user.controller";
 import { registerUserSchema } from "./user.schema";
