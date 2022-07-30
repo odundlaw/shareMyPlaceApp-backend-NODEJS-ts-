@@ -16,7 +16,6 @@ export async function loginHandler(req: Request<{}, {}, userLoginBody>, res:Resp
         }
 
         const payload = omit(user.toJSON(), ["password", "__v"]);
-        console.log(payload)
         const jwt = signJwt(payload);
 
         res.cookie("accessToken", jwt, {

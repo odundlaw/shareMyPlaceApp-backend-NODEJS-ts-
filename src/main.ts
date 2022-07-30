@@ -12,6 +12,7 @@ import logger from "./utils/logger";
 import userRoutes from "./modules/user/user.route";
 import authRoutes from "./modules/auth/auth.route";
 import bodyParser from "body-parser";
+import { validateAuth } from "./middlewares/validateAuth";
 
 const PORT = process.env.PORT || "8080";
 
@@ -26,6 +27,8 @@ app.use(cors({
 }))
 app.use(busboy({ immediate: true }));
 app.use(helmet());
+
+app.use(validateAuth);
 
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
