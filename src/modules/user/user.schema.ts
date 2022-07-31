@@ -25,7 +25,13 @@ export const registerUserSchema = {
     }).refine(data => data.password === data.confirmPassword, {
         message: "Passwords do not match",
         path: ["confirmPassword"]
+    }),
+    params: object({
+        userId: string({
+            required_error: "UserId is required, cannot be empty!"
+        })
     })
 };
 
 export type registerUserBody = TypeOf<typeof registerUserSchema.body>;
+export type userParams = TypeOf<typeof registerUserSchema.params>;

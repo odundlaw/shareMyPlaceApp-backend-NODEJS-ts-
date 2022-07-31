@@ -1,4 +1,5 @@
 import fs from "fs";
+import { customAlphabet } from "nanoid";
 
 export function getImagePath(imageName: string, extension: string) {
     return `${process.cwd()}/images/${imageName}${extension}`;
@@ -24,4 +25,8 @@ export function omit<T>(obj: T, property: keyof T | (keyof T)[]) {
 
     const { [property as keyof T]: unused, ...rest } = obj;
     return rest;
+}
+
+export function generateRandomCharacters(length: number): NonNullable<string> {
+    return (customAlphabet("abcdefghijklmnopqrstuvwxyz1234567890", length) as any) as string;
 }

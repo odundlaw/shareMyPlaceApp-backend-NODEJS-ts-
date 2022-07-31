@@ -5,7 +5,7 @@ export function isAuthenticated(req:Request, res:Response, next:NextFunction){
     const user = res.locals.user;
     
     if(!user){
-        return res.status(StatusCodes.UNAUTHORIZED).send("Unauthorized user!s")
+        return res.status(StatusCodes.UNAUTHORIZED).send("Unauthorized users!")
     }
 
     return next();

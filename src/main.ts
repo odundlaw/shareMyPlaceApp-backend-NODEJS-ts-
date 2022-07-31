@@ -9,9 +9,11 @@ import busboy from "connect-busboy";
 import { connectToDatabase, disconnectDatabase } from "./utils/database";
 import constants from "./constants/constants.config";
 import logger from "./utils/logger";
+import bodyParser from "body-parser";
+
 import userRoutes from "./modules/user/user.route";
 import authRoutes from "./modules/auth/auth.route";
-import bodyParser from "body-parser";
+import placeRoutes from "./modules/places/places.route"
 import { validateAuth } from "./middlewares/validateAuth";
 
 const PORT = process.env.PORT || "8080";
@@ -28,15 +30,17 @@ app.use(cors({
 app.use(busboy({ immediate: true }));
 app.use(helmet());
 
+
 app.use(validateAuth);
 
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/place", placeRoutes);
 
 const httpServer = createServer(app);
-const server = httpServer.listen(PORT, () => {
+const server = httpServer.listen(PORT, async () => {
+    await connectToDatabase();
     logger.info(`App listening at localhost://${PORT}`);
-    connectToDatabase();
 });
 
 function gracefulShutdown(signals: string) {

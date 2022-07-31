@@ -26,7 +26,7 @@ export async function loginHandler(req: Request<{}, {}, userLoginBody>, res:Resp
             sameSite: "strict"
         });
 
-        res.status(StatusCodes.OK).send(jwt);
+        return res.status(StatusCodes.OK).send(jwt);
 
     }catch(error: any){
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error.message);
