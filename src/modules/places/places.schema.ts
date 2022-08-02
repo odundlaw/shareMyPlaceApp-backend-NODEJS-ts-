@@ -11,10 +11,17 @@ export const placeShema = {
         address: string({
             required_error: "Addess cannot be empty!"
         }).min(10, "Address has to be at least 10 Characters long!"),
+    }),
+    params: object({
+        placeId: string({
+            required_error: "One or two Params required"
+        })
     })
 }
 
 
 export type placeBody = TypeOf<typeof placeShema.body>;
+
+export type placeParams = TypeOf<typeof placeShema.params>;
 
 

@@ -1,8 +1,9 @@
 import { prop, getModelForClass, Ref } from "@typegoose/typegoose";
+import { Types } from "mongoose";
 import { customAlphabet } from "nanoid";
 import { User } from "../user/user.model";
 
-const nanoid = customAlphabet("abcdefghijklmnopqrstuvwxyz1234567890", 12);
+const nanoid: () => string = customAlphabet("abcdefghijklmnopqrstuvwxyz1234567890", 12);
 
 export type Coordinates = {
     lat: number,
@@ -10,7 +11,7 @@ export type Coordinates = {
 }
 
 export class Place {
-    
+
     @prop({ unique: true, default: () => nanoid() })
     public placeId: string;
 
@@ -27,7 +28,7 @@ export class Place {
     public location: Coordinates;
 
     @prop({ required: true, ref: () => User })
-    public creator: Ref<User>;
+    public creator: Ref<User, Types.ObjectId>;
 };
 
 

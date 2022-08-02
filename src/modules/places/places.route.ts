@@ -1,11 +1,19 @@
 import express from "express";
 import { processRequestBody } from "zod-express-middleware";
-import { createPlace } from "./places.controller";
+import { isAuthenticated } from "../../middlewares/isAuthenticated";
+import { validateAuth } from "../../middlewares/validateAuth";
+import { createPlace, deletePlace, fetchPlaces, getSinglePlace } from "./places.controller";
 import { placeShema } from "./places.schema";
 
 const router = express.Router();
 
-router.post("/createPlace", processRequestBody(placeShema.body), createPlace);
+router.post("/createPlace", [validateAuth, isAuthenticated, processRequestBody(placeShema.body)], createPlace);
+
+router.get("/", fetchPlaces);
+
+router.get("/:placeId", getSinglePlace);
+
+router.delete("/:placeId", [validateAuth, isAuthenticated], deletePlace)
 
 
 export default router;
