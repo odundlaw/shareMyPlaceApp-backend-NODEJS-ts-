@@ -12,11 +12,12 @@ export async function getAllPlaces() {
 }
 
 export async function getPlaceById(placeId: Place["placeId"]) {
-    return placeModel.findOne({ placeId: placeId }).populate({ path: "creator", select: "fullName username email placeId" });
+    return placeModel.findOne({ placeId: placeId });
 }
 
 
 export async function deletePlaceById(placeId: Place["placeId"]) {
     return placeModel.findOneAndDelete({placeId: placeId});
 }
+
 

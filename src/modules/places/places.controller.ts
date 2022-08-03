@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import NodeGeocoder from "node-geocoder"
 import { StatusCodes } from "http-status-codes";
-import { placeBody, placeParams } from "./places.schema";
+import { placeBody, placeParams, updatePlaceBody } from "./places.schema";
 import { createNewPlace, deletePlaceById, getAllPlaces, getPlaceById } from "./places.service";
 import { Coordinates } from "./places.model";
 import { Types } from "mongoose";
@@ -92,7 +92,7 @@ export async function deletePlace(req: Request<placeParams>, res: Response) {
     try {
         const place = await getPlaceById(placeId);
 
-        if (!place || !String(place.creator._id) === creatorId) {
+        if (!place || !(String(place.creator) === String(creatorId))) {
             return res.status(StatusCodes.UNAUTHORIZED).send("You are not authorized Please!")
         }
 
@@ -111,4 +111,53 @@ export async function deletePlace(req: Request<placeParams>, res: Response) {
         }
         return res.send(err);
     }
+}
+
+
+export async function updatePlace(req: Request<placeParams, {}, updatePlaceBody>, res: Response) {
+
+    const { title, address, description } = req.body;
+    const { placeId } = req.params;
+
+    const { _id: creator } = res.locals.user;
+
+    try {
+
+        const verifyPlaceCreator = await getPlaceById(placeId);
+
+        if (!verifyPlaceCreator || !(String(verifyPlaceCreator.creator) === String(creator))) {
+            return res.status(StatusCodes.UNAUTHORIZED).send("You are not authorised Please!");
+        }
+
+
+        const geocoder = NodeGeocoder(options);
+
+        const placeData = await geocoder.geocode({ address: address, limit: 1 });
+        if (placeData.length <= 0) {
+            return res.status(StatusCodes.NOT_FOUND).send("Current Place of Address not Found!, try again!")
+        }
+
+        const location: Coordinates = {
+            lat: placeData[0].latitude!,
+            lng: placeData[0].longitude!,
+        }
+
+
+        verifyPlaceCreator.address = address;
+        verifyPlaceCreator.location = location;
+        verifyPlaceCreator.title = title;
+        verifyPlaceCreator.description = description;
+
+        const updatedPlace = await verifyPlaceCreator.save();
+
+
+        return res.status(StatusCodes.CREATED).send(updatedPlace);
+
+    } catch (err: any) {
+        if (!err.statusCode) {
+            err.statusCode = StatusCodes.FORBIDDEN
+        }
+        return res.status(err.statusCode).send(err.message)
+    }
+
 }

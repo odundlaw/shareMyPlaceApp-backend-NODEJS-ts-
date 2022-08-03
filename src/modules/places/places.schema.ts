@@ -19,9 +19,17 @@ export const placeShema = {
     })
 }
 
+export const updatePlaceSchema = {
+    body: object({
+        title: string(),
+        description: string(),
+        address: string()
+    })
+}
+
 
 export type placeBody = TypeOf<typeof placeShema.body>;
-
+export type updatePlaceBody = TypeOf<typeof updatePlaceSchema.body>;
 export type placeParams = TypeOf<typeof placeShema.params>;
 
 
