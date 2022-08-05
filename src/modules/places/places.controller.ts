@@ -4,7 +4,8 @@ import { StatusCodes } from "http-status-codes";
 import { placeBody, placeParams, updatePlaceBody } from "./places.schema";
 import { createNewPlace, deletePlaceById, getAllPlaces, getPlaceById } from "./places.service";
 import { Coordinates } from "./places.model";
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
+import { getUserById } from "../user/user.service";
 
 const options = {
     provider: 'locationiq',
@@ -29,7 +30,20 @@ export async function createPlace(req: Request<{}, {}, placeBody>, res: Response
             lng: placeData[0].longitude!,
         }
 
-        const newPlace = await createNewPlace({ title, address, description, location, creator });
+        const user = await getUserById(creator.toString());
+
+        if (!user) {
+            return res.status(StatusCodes.NOT_FOUND).send("User not Found here")
+        }
+
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+
+        const newPlace = await createNewPlace({ title, address, description, location, creator }, sess);
+        user.places.push(newPlace[0]);
+        await user.save({ session: sess });
+
+        sess.commitTransaction();
 
         return res.status(StatusCodes.CREATED).send(newPlace);
 
@@ -123,9 +137,9 @@ export async function updatePlace(req: Request<placeParams, {}, updatePlaceBody>
 
     try {
 
-        const verifyPlaceCreator = await getPlaceById(placeId);
+        const place = await getPlaceById(placeId);
 
-        if (!verifyPlaceCreator || !(String(verifyPlaceCreator.creator) === String(creator))) {
+        if (!place || !(String(place.creator) === String(creator))) {
             return res.status(StatusCodes.UNAUTHORIZED).send("You are not authorised Please!");
         }
 
@@ -143,12 +157,12 @@ export async function updatePlace(req: Request<placeParams, {}, updatePlaceBody>
         }
 
 
-        verifyPlaceCreator.address = address;
-        verifyPlaceCreator.location = location;
-        verifyPlaceCreator.title = title;
-        verifyPlaceCreator.description = description;
+        place.address = address;
+        place.location = location;
+        place.title = title;
+        place.description = description;
 
-        const updatedPlace = await verifyPlaceCreator.save();
+        const updatedPlace = await place.save();
 
 
         return res.status(StatusCodes.CREATED).send(updatedPlace);

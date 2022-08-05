@@ -1,9 +1,10 @@
+import { ClientSession } from "mongoose";
 import { User } from "../user/user.model";
 import { Place, placeModel } from "./places.model";
 
 
-export async function createNewPlace(placeObj: Omit<Place, "placeId">) {
-    return placeModel.create(placeObj);
+export async function createNewPlace(placeObj: Omit<Place, "placeId">, session: ClientSession) {
+    return placeModel.create([placeObj], { session:session });
 };
 
 
@@ -17,7 +18,7 @@ export async function getPlaceById(placeId: Place["placeId"]) {
 
 
 export async function deletePlaceById(placeId: Place["placeId"]) {
-    return placeModel.findOneAndDelete({placeId: placeId});
+    return placeModel.findOneAndDelete({ placeId: placeId });
 }
 
 

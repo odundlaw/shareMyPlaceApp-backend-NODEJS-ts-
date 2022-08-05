@@ -7,15 +7,15 @@ import { placeShema } from "./places.schema";
 
 const router = express.Router();
 
-router.post("/createPlace", [validateAuth, isAuthenticated, processRequestBody(placeShema.body)], createPlace);
+router.route("/createPlace")
+    .post([validateAuth, isAuthenticated, processRequestBody(placeShema.body)], createPlace);
 
-router.get("/", fetchPlaces);
+router.route("/")
+    .get(fetchPlaces);
 
-router.get("/:placeId", getSinglePlace);
-
-router.delete("/:placeId", [validateAuth, isAuthenticated], deletePlace);
-
-router.patch("/:placeId", [validateAuth, isAuthenticated], updatePlace)
-
+router.route("/:placeId")
+    .get(getSinglePlace)
+    .delete([validateAuth, isAuthenticated], deletePlace)
+    .patch([validateAuth, isAuthenticated], updatePlace)
 
 export default router;

@@ -1,5 +1,7 @@
-import { getModelForClass, prop, pre } from "@typegoose/typegoose";
+import { getModelForClass, prop, pre, Ref } from "@typegoose/typegoose";
 import argon2 from "argon2";
+import { Types } from "mongoose";
+import { Place } from "../places/places.model";
 
 @pre<User>("save", async function (next) {
     if (this.isModified("password") || this.isNew) {
@@ -20,8 +22,11 @@ export class User {
     @prop({ required: true, unique: true })
     public email: string;
 
-    @prop({ required: true})
+    @prop({ required: true })
     public image: string;
+
+    @prop({ ref: "Place"})
+    public places: Ref<Place, Types.ObjectId>[]
 
     @prop({ required: true })
     public password: string;
