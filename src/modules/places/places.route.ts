@@ -2,7 +2,7 @@ import express from "express";
 import { processRequestBody } from "zod-express-middleware";
 import { isAuthenticated } from "../../middlewares/isAuthenticated";
 import { validateAuth } from "../../middlewares/validateAuth";
-import { createPlace, deletePlace, fetchPlaces, getSinglePlace, updatePlace } from "./places.controller";
+import { createPlace, deletePlace, fetchPlaces, getSinglePlace, getUserPlacesById, updatePlace } from "./places.controller";
 import { placeShema } from "./places.schema";
 
 const router = express.Router();
@@ -17,5 +17,8 @@ router.route("/:placeId")
     .get(getSinglePlace)
     .delete([validateAuth, isAuthenticated], deletePlace)
     .patch([validateAuth, isAuthenticated], updatePlace)
+
+router.route("/user/:userId")
+    .get([validateAuth, isAuthenticated], getUserPlacesById);
 
 export default router;

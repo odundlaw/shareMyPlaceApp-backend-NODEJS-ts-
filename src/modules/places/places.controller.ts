@@ -2,10 +2,11 @@ import { Request, Response } from "express";
 import NodeGeocoder from "node-geocoder"
 import { StatusCodes } from "http-status-codes";
 import { placeBody, placeParams, updatePlaceBody } from "./places.schema";
-import { createNewPlace, deletePlaceById, getAllPlaces, getPlaceById } from "./places.service";
+import { createNewPlace, deletePlaceById, getAllPlaces, getAllUserPlaceById, getPlaceById } from "./places.service";
 import { Coordinates } from "./places.model";
 import mongoose, { Types } from "mongoose";
 import { getUserById } from "../user/user.service";
+import { userParams } from "../user/user.schema";
 
 const options = {
     provider: 'locationiq',
@@ -43,7 +44,7 @@ export async function createPlace(req: Request<{}, {}, placeBody>, res: Response
         user.places.push(newPlace[0]);
         await user.save({ session: sess });
 
-        sess.commitTransaction();
+        await sess.commitTransaction();
 
         return res.status(StatusCodes.CREATED).send(newPlace);
 
@@ -104,20 +105,30 @@ export async function deletePlace(req: Request<placeParams>, res: Response) {
     const { _id: creatorId } = res.locals.user;
 
     try {
-        const place = await getPlaceById(placeId);
+        const [place, user] = await Promise.all([getPlaceById(placeId), getUserById(creatorId)]);
 
         if (!place || !(String(place.creator) === String(creatorId))) {
             return res.status(StatusCodes.UNAUTHORIZED).send("You are not authorized Please!")
         }
 
-        const deletedPlace = await deletePlaceById(placeId);
+        const session = await mongoose.startSession();
+        session.startTransaction();
 
-        if (deletedPlace) {
-            return res.status(StatusCodes.OK).send(deletedPlace);
+        const deletedPlace = await deletePlaceById(placeId, session);
+
+        await user!.places.pull(place._id);
+
+        await user!.save({ session: session });
+
+        const committed = await session.commitTransaction();
+
+        if (!committed) {
+
+            return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Unable to Delete Place")
+
         }
 
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Unable to Delete Place")
-
+        return res.status(StatusCodes.OK).send(deletedPlace);
 
     } catch (err: any) {
         if (!err.statusCode) {
@@ -173,5 +184,32 @@ export async function updatePlace(req: Request<placeParams, {}, updatePlaceBody>
         }
         return res.status(err.statusCode).send(err.message)
     }
+
+}
+
+
+export async function getUserPlacesById(req: Request<userParams>, res: Response) {
+    const { userId } = req.params;
+
+    if (!userId) {
+        return res.status(StatusCodes.NOT_ACCEPTABLE).send("You cant view this Page Please");
+    }
+
+    try {
+        const userPlaces = await getAllUserPlaceById(userId);
+
+        if (!userPlaces || userPlaces.length <= 0) {
+            return res.status(StatusCodes.NOT_FOUND).send("Can't find Places by the specified ID, kindly Retry!")
+        }
+
+        return res.status(StatusCodes.OK).send(userPlaces);
+
+    } catch (err: any) {
+        if (!err.statusCode) {
+            err.statusCOde = StatusCodes.INTERNAL_SERVER_ERROR
+        }
+        res.send(err);
+    }
+
 
 }
