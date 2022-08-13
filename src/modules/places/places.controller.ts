@@ -7,6 +7,7 @@ import { Coordinates } from "./places.model";
 import mongoose, { Types } from "mongoose";
 import { getUserById } from "../user/user.service";
 import { userParams } from "../user/user.schema";
+import { deleteFile } from "../../utils/helpers";
 
 const options = {
     provider: 'locationiq',
@@ -14,7 +15,7 @@ const options = {
 }
 
 export async function createPlace(req: Request<{}, {}, placeBody>, res: Response) {
-    const { title, address, description } = req.body;
+    const { title, address, description, image } = req.body;
     const { _id: creator }: { _id: Types.ObjectId } = res.locals.user;
 
     try {
@@ -40,7 +41,7 @@ export async function createPlace(req: Request<{}, {}, placeBody>, res: Response
         const sess = await mongoose.startSession();
         sess.startTransaction();
 
-        const newPlace = await createNewPlace({ title, address, description, location, creator }, sess);
+        const newPlace = await createNewPlace({ title, address, description, location, creator, image }, sess);
         user.places.push(newPlace[0]);
         await user.save({ session: sess });
 
@@ -127,6 +128,8 @@ export async function deletePlace(req: Request<placeParams>, res: Response) {
             return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send("Unable to Delete Place")
 
         }
+        
+        deleteFile(place.image);
 
         return res.status(StatusCodes.OK).send(deletedPlace);
 
@@ -141,7 +144,7 @@ export async function deletePlace(req: Request<placeParams>, res: Response) {
 
 export async function updatePlace(req: Request<placeParams, {}, updatePlaceBody>, res: Response) {
 
-    const { title, address, description } = req.body;
+    const { title, address, description, image } = req.body;
     const { placeId } = req.params;
 
     const { _id: creator } = res.locals.user;
@@ -153,7 +156,6 @@ export async function updatePlace(req: Request<placeParams, {}, updatePlaceBody>
         if (!place || !(String(place.creator) === String(creator))) {
             return res.status(StatusCodes.UNAUTHORIZED).send("You are not authorised Please!");
         }
-
 
         const geocoder = NodeGeocoder(options);
 
@@ -167,6 +169,10 @@ export async function updatePlace(req: Request<placeParams, {}, updatePlaceBody>
             lng: placeData[0].longitude!,
         }
 
+        if (image && place.image !== image) {
+            deleteFile(place.image);
+            place.image = image;
+        }
 
         place.address = address;
         place.location = location;

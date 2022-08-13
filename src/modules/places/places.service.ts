@@ -9,7 +9,7 @@ export async function createNewPlace(placeObj: Omit<Place, "placeId">, session: 
 
 
 export async function getAllPlaces() {
-    return placeModel.find().populate({ path: "creator", select: "fullName username email placeId" })
+    return placeModel.find().populate({ path: "creator", select: "fullName username email placeId image" })
 }
 
 export async function getPlaceById(placeId: Place["placeId"]) {

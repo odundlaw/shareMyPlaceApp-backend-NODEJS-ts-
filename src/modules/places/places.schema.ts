@@ -11,6 +11,9 @@ export const placeShema = {
         address: string({
             required_error: "Addess cannot be empty!"
         }).min(10, "Address has to be at least 10 Characters long!"),
+        image: string({
+            required_error: "Image cannot be empty! Thank You"
+        })
     }),
     params: object({
         placeId: string({
@@ -23,7 +26,8 @@ export const updatePlaceSchema = {
     body: object({
         title: string(),
         description: string(),
-        address: string()
+        address: string(),
+        image: string(),
     })
 }
 

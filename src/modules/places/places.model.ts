@@ -27,6 +27,9 @@ export class Place {
     @prop({ required: true })
     public location: Coordinates;
 
+    @prop({required: true})
+    public image: string;
+
     @prop({ required: true, ref: () => User })
     public creator: Ref<User, Types.ObjectId>;
 };
