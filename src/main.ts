@@ -3,6 +3,7 @@ import 'dotenv/config';
 import { createServer } from "http";
 import cookieParser from "cookie-parser";
 import helmet from "helmet";
+import path from "path";
 import cors from "cors";
 import busboy from "connect-busboy";
 
@@ -30,12 +31,18 @@ app.use(cors({
 app.use(busboy({ immediate: true }));
 app.use(helmet());
 
+app.use("/images", (req, res, next) =>{
+    res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+    res.sendFile(path.join(__dirname, "..", `images/${req.url}`));
+})
 
 app.use(validateAuth);
 
-app.use("/api/users", userRoutes);
+app.use("/api/users", userRoutes)
 app.use("/api/auth", authRoutes);
 app.use("/api/place", placeRoutes);
+
+
 
 const httpServer = createServer(app);
 const server = httpServer.listen(PORT, async () => {

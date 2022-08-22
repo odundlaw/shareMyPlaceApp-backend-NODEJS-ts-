@@ -2,7 +2,7 @@ import fs from "fs";
 import { customAlphabet } from "nanoid";
 
 export function getImagePath(imageName: string, extension: string, path: string) {
-    return `${process.cwd()}/${path}/${imageName}${extension}`;
+    return `${path}/${imageName}${extension}`;
 }
 
 export function deleteFile(filePath: string) {

@@ -7,11 +7,11 @@ import { signJwt } from "./uth.utils";
 
 export async function loginHandler(req: Request<{}, {}, userLoginBody>, res:Response, next:NextFunction){
     const {email, password} = req.body;
-
+   
     try{
         const user = await findByEmail(email);
 
-        if(!user || !user.comparePassword(password)){
+        if(!user || !await user.comparePassword(password)){
            return res.status(StatusCodes.UNAUTHORIZED).send("Invalid email or Password ");
         }
 
